@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+import datetime
+import os
+import sys
+import yaml
+
+timestamp = datetime.datetime.now()
+
+print timestamp
+print "------------"
+print "Running Scan"
+print "------------"
+print ('')
+
+def RUN_TEST(CHECK, ARG):
+
+    # Define standardOut and returnCodes
+    # buffer is for alignment of results
+    #
+    standardOut = os.popen(ARG).read()
+    returnCode = os.system("%s > /dev/null" % ARG)
+    buffer = ('.' * (35 - len(CHECK)))
+
+    if returnCode == 0:
+        print ("%s %s [ \033[0;32mPass\033[0m ]" % (CHECK, buffer))
+    else:
+        print ("%s %s [ \033[0;31mFail\033[0m ]" % (CHECK, buffer))
+
+
+for filename in os.listdir('./tests'):
+
+    # CHECK is the filename minus a 3 letter extention (Example test-1.sh)
+    # ARG is the string that runs the executable (Example: ./tests/test-1.sh)
+    #
+    CHECK = filename[0:-3]
+    ARG = ("./tests/%s" % filename)
+    RUN_TEST(CHECK, ARG)
+
+print ('')
