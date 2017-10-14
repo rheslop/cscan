@@ -40,15 +40,6 @@ def runScan(test):
         else:
             print ("%s %s [ \033[0;31mFail\033[0m ]" % (CHECK, buffer))
 
-def help(err):
-    print ""
-    print err
-    print "----------"
-    print "Options:"
-    print ""
-    print "--run-test <test-name>"
-    print "--import <filename>"
-
 def importz(file):
     if os.path.isfile(file):
         print ("Importing %s" % file)
@@ -72,23 +63,56 @@ def importz(file):
             shutil.move(yamlFile, destination)
         except IOError as msg:
             print (msg)
-        destination = ("%s/sample/tests/%s" % (scanpath, file)
+        destination = ("%s/sample/tests/%s" % (scanpath, file))
         try:
             shutil.move(file, destination)
-        exceptIOError as msg:
+        except IOError as msg:
             print (msg)
-     
     else:
         print ("%s not found!" % file)
     
+def help(err):
+    print ""
+    print err
+    print "----------"
+    print "Options:"
+    print ""
+    print "--create-scan <scan-name>"
+    print "--import <filename>"
+    print "--run-test <test-name>"
+
 if len(sys.argv) != 3:
     help("Wrong number of arguments.")
 
-elif (sys.argv[1] == "--run-test"):
-    runScan('sample')
+elif (sys.argv[1] == "--create-scan"):
+    try:
+        os.makedirs("%s/%s" % (scanpath, sys.argv[2]))
+        scanName = ("%s/%s" % (scanpath, sys.argv[2]))
+        os.makedirs("%s/descriptors" % scanName)
+        os.makedirs("%s/tests" % scanName)
+    except IOError as msg:
+        print (msg)
 
 elif (sys.argv[1] == "--import"):
-    importz(sys.argv[2])
+    if len(os.listdir(scanpath)) == 0:
+        print "No scans found!"
+    elif len(os.listdir(scanpath)) == 1:
+        importz(sys.argv[2])
+    else:
+        print "Select test:"
+        print os.listdir(scanpath)
+        selectedScan = raw_input('~> ')
+        importz(sys.argv[2])
+
+elif (sys.argv[1] == "--run-test"):
+    if sys.argv[2] in os.listdir(scanpath):
+        runScan(sys.argv[2])
+    else:
+        print ("")
+        print ("%s not found!" % sys.argv[2])
+        print ("")
+        print ("Available tests:")
+        print os.listdir(scanpath)
 
 else:
     help("Invalid argument: %s" % sys.argv[1])
