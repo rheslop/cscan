@@ -2,39 +2,94 @@
 
 import datetime
 import os
+import shutil
 import sys
 import yaml
 
-timestamp = datetime.datetime.now()
+installpath=('/opt/cscan')
+scanpath=('/opt/cscan/scans')
 
-print timestamp
-print "------------"
-print "Running Scan"
-print "------------"
-print ('')
+def runScan(test):
+    timestamp = datetime.datetime.now()
+    print timestamp
+    print "------------"
+    print "Running Scan"
+    print "------------"
+    print ('')
 
-def RUN_TEST(CHECK, ARG):
+    for filename in os.listdir('%s/%s/descriptors/' % (scanpath, test)):
+        descriptor = ("%s/%s/descriptors/%s" % (scanpath, test, filename))
+        with open(descriptor, 'r') as header:
+            dictionary = yaml.load(header)
 
-    # Define standardOut and returnCodes
-    # buffer is for alignment of results
-    #
-    standardOut = os.popen(ARG).read()
-    returnCode = os.system("%s > /dev/null" % ARG)
-    buffer = ('.' * (35 - len(CHECK)))
+        CHECK = dictionary['name']
+        DESC = dictionary['description']
+        FAIL_MD = dictionary['fail_method']
+        FAIL_MG = dictionary['fail_message']
+        ARG = ("%s/%s/tests/%s" % (scanpath, test, dictionary['execute']))
 
-    if returnCode == 0:
-        print ("%s %s [ \033[0;32mPass\033[0m ]" % (CHECK, buffer))
+        # Define standardOut and returnCodes
+        # buffer is for alignment of results
+        #
+        standardOut = os.popen(ARG).read()
+        returnCode = os.system("%s > /dev/null" % ARG)
+        buffer = ('.' * (35 - len(CHECK)))
+
+        if returnCode == 0:
+            print ("%s %s [ \033[0;32mPass\033[0m ]" % (CHECK, buffer))
+        else:
+            print ("%s %s [ \033[0;31mFail\033[0m ]" % (CHECK, buffer))
+
+def help(err):
+    print ""
+    print err
+    print "----------"
+    print "Options:"
+    print ""
+    print "--run-test <test-name>"
+    print "--import <filename>"
+
+def importz(file):
+    if os.path.isfile(file):
+        print ("Importing %s" % file)
+        CHECK = raw_input('Name: ')
+        DESC = raw_input('Description: ')
+        FAIL_MD = raw_input('Failure method [ warn | fail ]:')
+        FAIL_MG = raw_input('Failure message: ')
+        EXECUTE = file
+        dictionary = {'name': CHECK, 'description': DESC, 'fail_method': FAIL_MD, 'fail_message': FAIL_MG, 'execute': EXECUTE}
+        yamlFile = ("%s.yml" % file.split('.')[0])
+        f = open(yamlFile, 'w')
+        f.write("---\n")
+        f.write("name: %s\n" % CHECK)
+        f.write("description: %s\n" % DESC)
+        f.write("fail_method: %s\n" % FAIL_MD)
+        f.write("fail_message: %s\n" % FAIL_MG)
+        f.write("execute: %s\n" % EXECUTE)
+        f.close()
+        destination = ("%s/sample/descriptors/%s" % (scanpath, yamlFile))
+        try:
+            shutil.move(yamlFile, destination)
+        except IOError as msg:
+            print (msg)
+        destination = ("%s/sample/tests/%s" % (scanpath, file)
+        try:
+            shutil.move(file, destination)
+        exceptIOError as msg:
+            print (msg)
+     
     else:
-        print ("%s %s [ \033[0;31mFail\033[0m ]" % (CHECK, buffer))
+        print ("%s not found!" % file)
+    
+if len(sys.argv) != 3:
+    help("Wrong number of arguments.")
 
+elif (sys.argv[1] == "--run-test"):
+    runScan('sample')
 
-for filename in os.listdir('./tests'):
+elif (sys.argv[1] == "--import"):
+    importz(sys.argv[2])
 
-    # CHECK is the filename minus a 3 letter extention (Example test-1.sh)
-    # ARG is the string that runs the executable (Example: ./tests/test-1.sh)
-    #
-    CHECK = filename[0:-3]
-    ARG = ("./tests/%s" % filename)
-    RUN_TEST(CHECK, ARG)
-
+else:
+    help("Invalid argument: %s" % sys.argv[1])
 print ('')
