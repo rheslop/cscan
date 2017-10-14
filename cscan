@@ -45,7 +45,7 @@ def importz(file):
         print ("Importing %s" % file)
         CHECK = raw_input('Name: ')
         DESC = raw_input('Description: ')
-        FAIL_MD = raw_input('Failure method [ warn | fail ]:')
+        # FAIL_MD = raw_input('Failure method [ warn | fail ]:')
         FAIL_MG = raw_input('Failure message: ')
         EXECUTE = file
         dictionary = {'name': CHECK, 'description': DESC, 'fail_method': FAIL_MD, 'fail_message': FAIL_MG, 'execute': EXECUTE}
@@ -54,7 +54,7 @@ def importz(file):
         f.write("---\n")
         f.write("name: %s\n" % CHECK)
         f.write("description: %s\n" % DESC)
-        f.write("fail_method: %s\n" % FAIL_MD)
+        f.write("fail_method: %s\n" % fail)
         f.write("fail_message: %s\n" % FAIL_MG)
         f.write("execute: %s\n" % EXECUTE)
         f.close()
@@ -79,12 +79,16 @@ def help(err):
     print ""
     print "--create-scan <scan-name>"
     print "--import <filename>"
+    print "--list-scans"
     print "--run-test <test-name>"
+    exit()
 
-if len(sys.argv) != 3:
-    help("Wrong number of arguments.")
+if len(sys.argv) < 2:
+    help("")
 
 elif (sys.argv[1] == "--create-scan"):
+    if len(sys.argv) != 3:
+        help("Wrong number of arguments.")
     try:
         os.makedirs("%s/%s" % (scanpath, sys.argv[2]))
         scanName = ("%s/%s" % (scanpath, sys.argv[2]))
@@ -94,6 +98,8 @@ elif (sys.argv[1] == "--create-scan"):
         print (msg)
 
 elif (sys.argv[1] == "--import"):
+    if len(sys.argv) != 3:
+        help("Wrong number of arguments.")
     if len(os.listdir(scanpath)) == 0:
         print "No scans found!"
     elif len(os.listdir(scanpath)) == 1:
@@ -104,7 +110,16 @@ elif (sys.argv[1] == "--import"):
         selectedScan = raw_input('~> ')
         importz(sys.argv[2])
 
+elif (sys.argv[1] == "--list-scans"):
+    if len(sys.argv) != 2:
+        help("Wrong number of arguments.")
+    print ("")
+    for i in range(0, (len(os.listdir(scanpath)))):
+        print os.listdir(scanpath)[i]
+
 elif (sys.argv[1] == "--run-test"):
+    if len(sys.argv) !=3:
+        help("Wrong number of arguments.")
     if sys.argv[2] in os.listdir(scanpath):
         runScan(sys.argv[2])
     else:
