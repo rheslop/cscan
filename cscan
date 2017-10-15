@@ -53,7 +53,7 @@ def importz(file):
         f.write("---\n")
         f.write("name: %s\n" % CHECK)
         f.write("description: %s\n" % DESC)
-        f.write("fail_method: fail")
+        f.write("fail_method: fail\n")
         f.write("fail_message: %s\n" % FAIL_MG)
         f.write("execute: %s\n" % EXECUTE)
         f.close()
