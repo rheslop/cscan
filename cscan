@@ -31,8 +31,8 @@ def runScan(test):
         # Define standardOut and returnCodes
         # buffer is for alignment of results
         #
-        standardOut = os.popen(ARG).read()
-        returnCode = os.system("%s > /dev/null" % ARG)
+        standardOut = os.popen("%s 2>&1" % ARG).read()
+        returnCode = os.system("%s > /dev/null 2>&1" % ARG)
         buffer = ('.' * (35 - len(CHECK)))
 
         if returnCode == 0:
