@@ -48,7 +48,6 @@ def importz(file):
         # FAIL_MD = raw_input('Failure method [ warn | fail ]:')
         FAIL_MG = raw_input('Failure message: ')
         EXECUTE = file
-        dictionary = {'name': CHECK, 'description': DESC, 'fail_method': FAIL_MD, 'fail_message': FAIL_MG, 'execute': EXECUTE}
         yamlFile = ("%s.yml" % file.split('.')[0])
         f = open(yamlFile, 'w')
         f.write("---\n")
