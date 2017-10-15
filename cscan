@@ -75,11 +75,11 @@ def importz(file):
                 print "error"
                 exit(1)
         try:
-            shutil.move(yamlFile, ("%s/descriptors/%s" % (destination, yamlFile))
+            shutil.move(yamlFile, ("%s/descriptors/%s" % (destination, yamlFile)))
         except IOError as msg:
             print (msg)
         try:
-            shutil.move(file, ("%s/tests/%s" % (destination, file))
+            shutil.move(file, ("%s/tests/%s" % (destination, file)))
         except IOError as msg:
             print (msg)
     else:
