@@ -58,7 +58,7 @@ def importz(file):
         f.write("execute: %s\n" % EXECUTE)
         f.close()
         if len(os.listdir(scanpath)) == 1:
-            destination = ("%s/%s/descriptors/%s" % (scanpath, os.listdir(scanpath)[0], yamlFile))
+            destination = ("%s/%s" % (scanpath, os.listdir(scanpath)[0]))
         else:
             print ""
             print "Import where?"
@@ -70,17 +70,16 @@ def importz(file):
                 print i
             scan_select = raw_input("~> ")
             if scan_select in os.listdir(scanpath)[0]:
-                destination = ("%s/%s/descriptors/%s" % (scanpath, scan_select, yamlFile))
+                destination = ("%s/%s" % (scanpath, scan_select))
             else:
                 print "error"
                 exit(1)
         try:
-            shutil.move(yamlFile, destination)
+            shutil.move(yamlFile, ("%s/descriptors/%s" % (destination, yamlFile))
         except IOError as msg:
             print (msg)
-        destination = ("%s/sample/tests/%s" % (scanpath, file))
         try:
-            shutil.move(file, destination)
+            shutil.move(file, ("%s/tests/%s" % (destination, file))
         except IOError as msg:
             print (msg)
     else:
