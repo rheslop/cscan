@@ -11,11 +11,12 @@ scanpath=('/opt/cscan/scans')
 
 def runScan(test):
     timestamp = datetime.datetime.now()
+    print ("")
     print timestamp
     print "------------"
     print "Running Scan"
     print "------------"
-    print ('')
+    print ("")
 
     for filename in os.listdir('%s/%s/descriptors/' % (scanpath, test)):
         descriptor = ("%s/%s/descriptors/%s" % (scanpath, test, filename))
@@ -95,10 +96,11 @@ def help(err):
     print "--import <filename>"
     print "--list-scans"
     print "--run-test <test-name>"
+    print ""
     exit()
 
 if len(sys.argv) < 2:
-    help("")
+    help("No arguments given.")
 
 elif (sys.argv[1] == "--create-scan"):
     if len(sys.argv) != 3:
