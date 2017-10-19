@@ -97,7 +97,7 @@ def help(err):
     print ("--create-scan <scan-name>")
     print ("--import <filename>")
     print ("--list-scans")
-    print ("--run-test <test-name>")
+    print ("--run-scan <test-name>")
     print ("")
     exit()
 
@@ -135,7 +135,7 @@ elif (sys.argv[1] == "--list-scans"):
     for i in range(0, (len(os.listdir(scanpath)))):
         print (os.listdir(scanpath)[i])
 
-elif (sys.argv[1] == "--run-test"):
+elif (sys.argv[1] == "--run-scan"):
     if len(sys.argv) !=3:
         help("Wrong number of arguments.")
     if sys.argv[2] in os.listdir(scanpath):
