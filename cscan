@@ -3,6 +3,7 @@
 import datetime
 import os
 import shutil
+import subprocess
 import sys
 import yaml
 
@@ -12,10 +13,10 @@ scanpath=('/opt/cscan/scans')
 def runScan(test):
     timestamp = datetime.datetime.now()
     print ("")
-    print timestamp
-    print "------------"
-    print "Running Scan"
-    print "------------"
+    print (timestamp)
+    print ("------------")
+    print ("Running Scan")
+    print ("------------")
     print ("")
 
     for filename in os.listdir('%s/%s/descriptors/' % (scanpath, test)):
@@ -32,14 +33,15 @@ def runScan(test):
         # Define standardOut and returnCodes
         # buffer is for alignment of results
         #
-        standardOut = os.popen("%s 2>&1" % ARG).read()
-        returnCode = os.system("%s > /dev/null 2>&1" % ARG)
         buffer = ('.' * (35 - len(CHECK)))
-
-        if returnCode == 0:
+        try:
+            subprocess.check_output(ARG, stdin=None, stderr=subprocess.STDOUT, shell=False)
             print ("%s %s [ \033[0;32mPass\033[0m ]" % (CHECK, buffer))
-        else:
+        except subprocess.CalledProcessError as err:
             print ("%s %s [ \033[0;31mFail\033[0m ]" % (CHECK, buffer))
+            rc = (err.returncode)
+            output = (err.output)
+            print ("Return code is %s and output is: %s" % (rc, output))
 
 def importz(file):
     if os.path.isfile(file):
@@ -61,19 +63,19 @@ def importz(file):
         if len(os.listdir(scanpath)) == 1:
             destination = ("%s/%s" % (scanpath, os.listdir(scanpath)[0]))
         else:
-            print ""
-            print "Import where?"
-            print ""
-            print "---------------"
-            print "Available Scans"
-            print "---------------"
+            print ("")
+            print ("Import where?")
+            print ("")
+            print ("---------------")
+            print ("Available Scans")
+            print ("---------------")
             for i in range(0, len(os.listdir(scanpath))):
-                print i
+                print (i)
             scan_select = raw_input("~> ")
             if scan_select in os.listdir(scanpath)[0]:
                 destination = ("%s/%s" % (scanpath, scan_select))
             else:
-                print "error"
+                print ("error")
                 exit(1)
         try:
             shutil.move(yamlFile, ("%s/descriptors/%s" % (destination, yamlFile)))
@@ -87,16 +89,16 @@ def importz(file):
         print ("%s not found!" % file)
     
 def help(err):
-    print ""
-    print err
-    print "----------"
-    print "Options:"
-    print ""
-    print "--create-scan <scan-name>"
-    print "--import <filename>"
-    print "--list-scans"
-    print "--run-test <test-name>"
-    print ""
+    print ("")
+    print (err)
+    print ("----------")
+    print ("Options:")
+    print ("")
+    print ("--create-scan <scan-name>")
+    print ("--import <filename>")
+    print ("--list-scans")
+    print ("--run-test <test-name>")
+    print ("")
     exit()
 
 if len(sys.argv) < 2:
@@ -117,12 +119,12 @@ elif (sys.argv[1] == "--import"):
     if len(sys.argv) != 3:
         help("Wrong number of arguments.")
     if len(os.listdir(scanpath)) == 0:
-        print "No scans found!"
+        print ("No scans found!")
     elif len(os.listdir(scanpath)) == 1:
         importz(sys.argv[2])
     else:
-        print "Select test:"
-        print os.listdir(scanpath)
+        print ("Select test:")
+        print (os.listdir(scanpath))
         selectedScan = raw_input('~> ')
         importz(sys.argv[2])
 
@@ -131,7 +133,7 @@ elif (sys.argv[1] == "--list-scans"):
         help("Wrong number of arguments.")
     print ("")
     for i in range(0, (len(os.listdir(scanpath)))):
-        print os.listdir(scanpath)[i]
+        print (os.listdir(scanpath)[i])
 
 elif (sys.argv[1] == "--run-test"):
     if len(sys.argv) !=3:
@@ -143,7 +145,7 @@ elif (sys.argv[1] == "--run-test"):
         print ("%s not found!" % sys.argv[2])
         print ("")
         print ("Available tests:")
-        print os.listdir(scanpath)
+        print (os.listdir(scanpath))
 
 else:
     help("Invalid argument: %s" % sys.argv[1])
