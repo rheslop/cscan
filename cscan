@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import argparse
 import datetime
 import os
 import shutil
@@ -30,10 +31,9 @@ def runScan(test):
         FAIL_MG = dictionary['fail_message']
         ARG = ("%s/%s/tests/%s" % (scanpath, test, dictionary['execute']))
 
-        # Define standardOut and returnCodes
         # buffer is for alignment of results
-        #
         buffer = ('.' * (35 - len(CHECK)))
+
         try:
             subprocess.check_output(ARG, stdin=None, stderr=subprocess.STDOUT, shell=False)
             print ("%s %s [ \033[0;32mPass\033[0m ]" % (CHECK, buffer))
@@ -70,15 +70,15 @@ def importz(file):
             print ("Available Scans")
             print ("---------------")
             for i in range(0, len(os.listdir(scanpath))):
-                print (i)
+                print os.listdir(scanpath)[i]
             scan_select = raw_input("~> ")
-            if scan_select in os.listdir(scanpath)[0]:
+            if scan_select in os.listdir(scanpath):
                 destination = ("%s/%s" % (scanpath, scan_select))
             else:
-                print ("error")
+                print ("%s not found!" % scan_select)
                 exit(1)
         try:
-            shutil.move(yamlFile, ("%s/descriptors/%s" % (destination, yamlFile)))
+            shutil.copy(yamlFile, ("%s/descriptors/%s" % (destination, yamlFile)))
         except IOError as msg:
             print (msg)
         try:
@@ -120,12 +120,7 @@ elif (sys.argv[1] == "--import"):
         help("Wrong number of arguments.")
     if len(os.listdir(scanpath)) == 0:
         print ("No scans found!")
-    elif len(os.listdir(scanpath)) == 1:
-        importz(sys.argv[2])
     else:
-        print ("Select test:")
-        print (os.listdir(scanpath))
-        selectedScan = raw_input('~> ')
         importz(sys.argv[2])
 
 elif (sys.argv[1] == "--list-scans"):
