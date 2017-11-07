@@ -11,6 +11,10 @@ import yaml
 installpath=('/opt/cscan')
 scanpath=('/opt/cscan/scans')
 
+cparser = argparse.ArgumentParser(prog='cscan')
+cparser.add_argument('--import', help='Import tests')
+
+
 def runScan(test):
     timestamp = datetime.datetime.now()
     print ("")
