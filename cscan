@@ -3,16 +3,10 @@
 import argparse
 import datetime
 import os
-import shutil
 import subprocess
 import sys
 
-installpath=('.')
 scanpath=('.')
-
-cparser = argparse.ArgumentParser(prog='cscan')
-cparser.add_argument('--import', help='Import tests')
-
 
 def runScan():
     timestamp = datetime.datetime.now()
@@ -22,7 +16,8 @@ def runScan():
     print ("Running Scan")
     print ("------------")
     print ("")
-
+    f = open('cscan.log', 'a')
+    f.write('SCAN: %s\n\n' % timestamp)
     for filename in os.listdir('%s' % (scanpath)):
         if filename != 'cscan':
             CHECK = (('%s/%s') % (scanpath, filename))
@@ -31,18 +26,24 @@ def runScan():
 
             try:
                 subprocess.check_output(CHECK, stdin=None, stderr=subprocess.STDOUT, shell=False)
-                print ("%s %s [ \033[0;32mPass\033[0m ]" % (filename, buffer))
+                print  ("%s %s [ \033[0;32mPass\033[0m ]" % (filename, buffer))
+                f.write("%s %s [ Pass ]\n" % (filename, buffer))
             except subprocess.CalledProcessError as err:
-                print ("%s %s [ \033[0;31mFail\033[0m ]" % (filename, buffer))
+                print  ("%s %s [ \033[0;31mFail\033[0m ]" % (filename, buffer))
+                f.write("%s %s [ Fail ]\n" % (filename, buffer))
                 rc = (err.returncode)
                 output = (err.output)
-                print ("Return code is %s and output is: %s" % (rc, output))
+                f.write('Return code: %s\n' % rc)
+                if output == True:
+                    f.write("Output: %s\n" % output)
+    f.close()
 
-runScan()
 
+cparser = argparse.ArgumentParser(prog='cscan')
+cparser.add_argument('--test', dest='EXECUTABLE', help='Run single test')
+cparser.add_argument('--scanpath', dest='DIRECTORY', help='Select scan path')
 
-# Possible options
-# --scanpath -s
-# --runtest -r
-# --help -h
+if len(sys.argv) == 1:
+    scanpath = raw_input('SCANPATH: ')
+    runScan()
 
