@@ -6,44 +6,70 @@ import os
 import subprocess
 import sys
 
-scanpath=('.')
-
-def runScan():
-    timestamp = datetime.datetime.now()
-    print ("")
-    print (timestamp)
-    print ("------------")
-    print ("Running Scan")
-    print ("------------")
-    print ("")
-    f = open('cscan.log', 'a')
-    f.write('SCAN: %s\n\n' % timestamp)
-    for filename in os.listdir('%s' % (scanpath)):
-        if filename != 'cscan':
+def runScan(scanpath):
+    if os.path.isdir(scanpath):
+        timestamp = datetime.datetime.now()
+        print (timestamp)
+        print ('------------')
+        print ('Running Scan')
+        print ('------------')
+        print ('')
+        f = open('cscan.log', 'a')
+        f.write('SCAN: %s\n' % timestamp)
+        f.write('=======================================\n')
+        for filename in os.listdir('%s' % (scanpath)):
             CHECK = (('%s/%s') % (scanpath, filename))
             # buffer is for alignment of results
             buffer = ('.' * (35 - len(CHECK)))
 
             try:
                 subprocess.check_output(CHECK, stdin=None, stderr=subprocess.STDOUT, shell=False)
-                print  ("%s %s [ \033[0;32mPass\033[0m ]" % (filename, buffer))
-                f.write("%s %s [ Pass ]\n" % (filename, buffer))
+                print  ('%s %s [ \033[0;32mPass\033[0m ]' % (filename, buffer))
+                f.write('%s %s [ Pass ]\n' % (filename, buffer))
             except subprocess.CalledProcessError as err:
-                print  ("%s %s [ \033[0;31mFail\033[0m ]" % (filename, buffer))
-                f.write("%s %s [ Fail ]\n" % (filename, buffer))
+                print  ('%s %s [ \033[0;31mFail\033[0m ]' % (filename, buffer))
+                f.write('%s %s [ Fail ]\n' % (filename, buffer))
                 rc = (err.returncode)
                 output = (err.output)
-                f.write('Return code: %s\n' % rc)
+                f.write('    Return code: %s\n' % rc)
                 if output == True:
-                    f.write("Output: %s\n" % output)
-    f.close()
+                    f.write('    Output: %s\n' % output)
+        f.write('\n')
+        f.close()
+        print('')
+    else:
+        print('')
+        print('%s is not a valid directory!' % scanpath)
+        print('')
 
+def runTest(test):
+    if os.path.isfile(test):
+        print ('')
+        try:
+            subprocess.check_output(test, stdin=None, stderr=subprocess.STDOUT, shell=False)
+            print ('[ \033[0;32mPass\033[0m ]')
+            print ('')
+        except subprocess.CalledProcessError as err:
+            print ('[ \033[0;31mFail\033[0m ]')
+            print ('')
+    else:
+        print('')
+        print('%s is not a valid file!' % test)
+        print('')
 
 cparser = argparse.ArgumentParser(prog='cscan')
-cparser.add_argument('--test', dest='EXECUTABLE', help='Run single test')
-cparser.add_argument('--scanpath', dest='DIRECTORY', help='Select scan path')
+single_args = cparser.add_mutually_exclusive_group()
+single_args.add_argument('--scanpath', dest='DIRECTORY', help='Select scan path')
+single_args.add_argument('--test', dest='EXECUTABLE', help='Run single test')
+ 
+# This may not be the best way for parse/exectution, but it works
 
 if len(sys.argv) == 1:
     scanpath = raw_input('SCANPATH: ')
-    runScan()
-
+    runScan(scanpath)
+elif cparser.parse_args().DIRECTORY:
+    runScan(cparser.parse_args().DIRECTORY)
+elif cparser.parse_args().EXECUTABLE:
+    runTest(cparser.parse_args().EXECUTABLE)
+else:
+    print('error:')
