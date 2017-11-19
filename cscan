@@ -6,16 +6,15 @@ import os
 import shutil
 import subprocess
 import sys
-import yaml
 
-installpath=('/opt/cscan')
-scanpath=('/opt/cscan/scans')
+installpath=('.')
+scanpath=('.')
 
 cparser = argparse.ArgumentParser(prog='cscan')
 cparser.add_argument('--import', help='Import tests')
 
 
-def runScan(test):
+def runScan():
     timestamp = datetime.datetime.now()
     print ("")
     print (timestamp)
@@ -24,128 +23,26 @@ def runScan(test):
     print ("------------")
     print ("")
 
-    for filename in os.listdir('%s/%s/descriptors/' % (scanpath, test)):
-        descriptor = ("%s/%s/descriptors/%s" % (scanpath, test, filename))
-        with open(descriptor, 'r') as header:
-            dictionary = yaml.load(header)
+    for filename in os.listdir('%s' % (scanpath)):
+        if filename != 'cscan':
+            CHECK = (('%s/%s') % (scanpath, filename))
+            # buffer is for alignment of results
+            buffer = ('.' * (35 - len(CHECK)))
 
-        CHECK = dictionary['name']
-        DESC = dictionary['description']
-        FAIL_MD = dictionary['fail_method']
-        FAIL_MG = dictionary['fail_message']
-        ARG = ("%s/%s/tests/%s" % (scanpath, test, dictionary['execute']))
+            try:
+                subprocess.check_output(CHECK, stdin=None, stderr=subprocess.STDOUT, shell=False)
+                print ("%s %s [ \033[0;32mPass\033[0m ]" % (filename, buffer))
+            except subprocess.CalledProcessError as err:
+                print ("%s %s [ \033[0;31mFail\033[0m ]" % (filename, buffer))
+                rc = (err.returncode)
+                output = (err.output)
+                print ("Return code is %s and output is: %s" % (rc, output))
 
-        # buffer is for alignment of results
-        buffer = ('.' * (35 - len(CHECK)))
+runScan()
 
-        try:
-            subprocess.check_output(ARG, stdin=None, stderr=subprocess.STDOUT, shell=False)
-            print ("%s %s [ \033[0;32mPass\033[0m ]" % (CHECK, buffer))
-        except subprocess.CalledProcessError as err:
-            print ("%s %s [ \033[0;31mFail\033[0m ]" % (CHECK, buffer))
-            rc = (err.returncode)
-            output = (err.output)
-            print ("Return code is %s and output is: %s" % (rc, output))
 
-def importz(file):
-    if os.path.isfile(file):
-        print ("Importing %s" % file)
-        CHECK = raw_input('Name: ')
-        DESC = raw_input('Description: ')
-        # FAIL_MD = raw_input('Failure method [ warn | fail ]:')
-        FAIL_MG = raw_input('Failure message: ')
-        EXECUTE = file
-        yamlFile = ("%s.yml" % file.split('.')[0])
-        f = open(yamlFile, 'w')
-        f.write("---\n")
-        f.write("name: %s\n" % CHECK)
-        f.write("description: %s\n" % DESC)
-        f.write("fail_method: fail\n")
-        f.write("fail_message: %s\n" % FAIL_MG)
-        f.write("execute: %s\n" % EXECUTE)
-        f.close()
-        if len(os.listdir(scanpath)) == 1:
-            destination = ("%s/%s" % (scanpath, os.listdir(scanpath)[0]))
-        else:
-            print ("")
-            print ("Import where?")
-            print ("")
-            print ("---------------")
-            print ("Available Scans")
-            print ("---------------")
-            for i in range(0, len(os.listdir(scanpath))):
-                print os.listdir(scanpath)[i]
-            scan_select = raw_input("~> ")
-            if scan_select in os.listdir(scanpath):
-                destination = ("%s/%s" % (scanpath, scan_select))
-            else:
-                print ("%s not found!" % scan_select)
-                exit(1)
-        try:
-            shutil.copy(yamlFile, ("%s/descriptors/%s" % (destination, yamlFile)))
-        except IOError as msg:
-            print (msg)
-        try:
-            shutil.move(file, ("%s/tests/%s" % (destination, file)))
-        except IOError as msg:
-            print (msg)
-    else:
-        print ("%s not found!" % file)
-    
-def help(err):
-    print ("")
-    print (err)
-    print ("----------")
-    print ("Options:")
-    print ("")
-    print ("--create-scan <scan-name>")
-    print ("--import <filename>")
-    print ("--list-scans")
-    print ("--run-scan <test-name>")
-    print ("")
-    exit()
+# Possible options
+# --scanpath -s
+# --runtest -r
+# --help -h
 
-if len(sys.argv) < 2:
-    help("No arguments given.")
-
-elif (sys.argv[1] == "--create-scan"):
-    if len(sys.argv) != 3:
-        help("Wrong number of arguments.")
-    try:
-        os.makedirs("%s/%s" % (scanpath, sys.argv[2]))
-        scanName = ("%s/%s" % (scanpath, sys.argv[2]))
-        os.makedirs("%s/descriptors" % scanName)
-        os.makedirs("%s/tests" % scanName)
-    except IOError as msg:
-        print (msg)
-
-elif (sys.argv[1] == "--import"):
-    if len(sys.argv) != 3:
-        help("Wrong number of arguments.")
-    if len(os.listdir(scanpath)) == 0:
-        print ("No scans found!")
-    else:
-        importz(sys.argv[2])
-
-elif (sys.argv[1] == "--list-scans"):
-    if len(sys.argv) != 2:
-        help("Wrong number of arguments.")
-    print ("")
-    for i in range(0, (len(os.listdir(scanpath)))):
-        print (os.listdir(scanpath)[i])
-
-elif (sys.argv[1] == "--run-scan"):
-    if len(sys.argv) !=3:
-        help("Wrong number of arguments.")
-    if sys.argv[2] in os.listdir(scanpath):
-        runScan(sys.argv[2])
-    else:
-        print ("")
-        print ("%s not found!" % sys.argv[2])
-        print ("")
-        print ("Available tests:")
-        print (os.listdir(scanpath))
-
-else:
-    help("Invalid argument: %s" % sys.argv[1])
-print ('')
