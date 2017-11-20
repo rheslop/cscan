@@ -20,7 +20,7 @@ def runScan(scanpath):
         for filename in os.listdir('%s' % (scanpath)):
             CHECK = (('%s/%s') % (scanpath, filename))
             # buffer is for alignment of results
-            buffer = ('.' * (35 - len(CHECK)))
+            buffer = ('.' * (35 - len(filename)))
 
             try:
                 subprocess.check_output(CHECK, stdin=None, stderr=subprocess.STDOUT, shell=False)
